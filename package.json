@@ -1,0 +1,81 @@
+{
+	"name": "@universal-stores/react-adapter",
+	"camelCaseName": "universalStoresReactAdapter",
+	"description": "A library that provides React Hooks for universal-stores.",
+	"version": "1.0.0",
+	"type": "module",
+	"types": "dist/index.d.ts",
+	"main": "dist/index.cjs",
+	"module": "dist/index.es.js",
+	"author": "Carlo Dell'Acqua",
+	"license": "MIT",
+	"keywords": [
+		"react",
+		"stores",
+		"state-management"
+	],
+	"repository": {
+		"url": "git+https://github.com/cdellacqua/stores.js-react-adapter"
+	},
+	"bugs": {
+		"url": "https://github.com/cdellacqua/stores.js-react-adapter/issues"
+	},
+	"homepage": "https://github.com/cdellacqua/stores.js-react-adapter",
+	"files": [
+		"dist/**/*"
+	],
+	"exports": {
+		".": {
+			"import": "./dist/index.es.js",
+			"require": "./dist/index.cjs"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"coverage": "c8 npm run test",
+		"test": "cross-env NODE_ENV=test mocha 'tests/**/*.tsx'",
+		"dev": "vite",
+		"build": "vite build && tsc --project ./tsconfig.declarations.json",
+		"doc": "rimraf docs && typedoc --gitRevision main --readme none --plugin typedoc-plugin-markdown src/lib/index.ts",
+		"prepack": "npm run lint && npm run build && npm test && npm run doc",
+		"lint": "eslint --max-warnings 0 .",
+		"lint:fix": "eslint --fix .",
+		"prettier": "prettier --check .",
+		"prettier:fix": "prettier --write .",
+		"setup": "node --unhandled-rejections=strict setup.js"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.3.1",
+		"@types/jsdom": "^20.0.0",
+		"@types/jsdom-global": "^3.0.3",
+		"@types/mocha": "^9.1.1",
+		"@types/node": "^18.0.0",
+		"@types/react": "^18.0.15",
+		"@types/react-dom": "^18.0.6",
+		"@typescript-eslint/eslint-plugin": "^5.29.0",
+		"@vitejs/plugin-react": "^2.0.0",
+		"c8": "^7.11.3",
+		"chai": "^4.3.6",
+		"cross-env": "^7.0.3",
+		"eslint": "^8.18.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-prettier": "^4.0.0",
+		"eslint-plugin-react-hooks": "^4.6.0",
+		"jsdom": "20.0.0",
+		"jsdom-global": "3.0.2",
+		"mocha": "^10.0.0",
+		"prettier": "^2.7.1",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"rimraf": "^3.0.2",
+		"ts-node": "^10.8.1",
+		"typedoc": "^0.23.10",
+		"typedoc-plugin-markdown": "^3.13.4",
+		"typescript": "^4.7.4",
+		"vite": "^3.0.4"
+	},
+	"peerDependencies": {
+		"react": ">=16.8.0",
+		"universal-stores": "^1.1.3"
+	}
+}
