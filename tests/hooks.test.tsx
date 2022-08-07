@@ -111,7 +111,7 @@ describe('hooks', () => {
 		onRender?.();
 		useEffect(() => {
 			setStore(target);
-		}, [target]);
+		}, [target, setStore]);
 		return <>{JSON.stringify(store)}</>;
 	}
 
@@ -128,7 +128,7 @@ describe('hooks', () => {
 		onRender?.();
 		useEffect(() => {
 			setStore(updater);
-		}, [updater]);
+		}, [updater, setStore]);
 		return <>{JSON.stringify(store)}</>;
 	}
 
