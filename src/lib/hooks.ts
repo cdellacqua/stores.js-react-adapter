@@ -100,7 +100,10 @@ export function useReadonlyStore<T>(store: ReadonlyStore<T>): T {
 
 	useEffect(() => {
 		// Unsubscribe once the component gets unmounted.
-		return () => contextRef.current?.unsubscribe();
+		return () => {
+			contextRef.current?.unsubscribe();
+			contextRef.current = undefined;
+		};
 	}, []);
 
 	return contextRef.current.wrappedValue.value;
