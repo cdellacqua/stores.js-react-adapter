@@ -1,5 +1,5 @@
 import './style.css';
-import {useReadonlyStore, useStore} from './lib';
+import {useReadonlyStore, useReadonlyStores, useStore} from './lib';
 import {makeReadonlyStore, makeStore, ReadonlyStore} from 'universal-stores';
 import {createRoot, Root} from 'react-dom/client';
 import {useState} from 'react';
@@ -39,6 +39,15 @@ function ReadonlyCounter(props: {count$: ReadonlyStore<number>}) {
 	);
 }
 
+function Sum() {
+	const [firstValue, secondValue] = useReadonlyStores([count$, autoCount$]);
+	return (
+		<>
+			<h1>Sum: {firstValue + secondValue}</h1>
+		</>
+	);
+}
+
 function App() {
 	const [mountAutoCount, setMountAutoCount] = useState(true);
 	return (
@@ -47,7 +56,13 @@ function App() {
 			<div style={{borderBottom: '1px solid gray', margin: '1rem 0'}} />
 			<ReadonlyCounter count$={count$} />
 			<div style={{borderBottom: '1px solid gray', margin: '1rem 0'}} />
-			{mountAutoCount && <ReadonlyCounter count$={autoCount$} />}
+			{mountAutoCount && (
+				<>
+					<ReadonlyCounter count$={autoCount$} />
+					<div style={{borderBottom: '1px solid gray', margin: '1rem 0'}} />
+					<Sum />
+				</>
+			)}
 			<button onClick={() => setMountAutoCount(!mountAutoCount)}>
 				{mountAutoCount ? 'unmount auto counter' : 'mount auto counter'}
 			</button>

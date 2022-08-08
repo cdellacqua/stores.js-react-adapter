@@ -3,7 +3,7 @@ import enableJSDOM from 'jsdom-global';
 import {createRoot, Root} from 'react-dom/client';
 import {act} from 'react-dom/test-utils';
 import {makeReadonlyStore, makeStore} from 'universal-stores';
-import {useReadonlyStore, useStore} from '../src/lib';
+import {useReadonlyStore, useReadonlyStores, useStore} from '../src/lib';
 
 describe('examples', () => {
 	let disableJSDOM = () => undefined as void;
@@ -129,5 +129,42 @@ describe('examples', () => {
 			document.querySelectorAll('button')[1].click();
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('0');
+	});
+
+	it('useReadonlyStores usage', () => {
+		const firstNumber$ = makeStore(4);
+		const secondNumber$ = makeStore(2);
+
+		function Sum() {
+			const [firstNumber, secondNumber] = useReadonlyStores([
+				firstNumber$,
+				secondNumber$,
+			]);
+			return (
+				<>
+					<h1>{firstNumber + secondNumber}</h1>
+				</>
+			);
+		}
+
+		act(() => root.render(<Sum />));
+
+		expect(document.querySelector('h1')?.textContent).to.eq('6');
+
+		act(() => {
+			firstNumber$.set(10);
+		});
+		expect(document.querySelector('h1')?.textContent).to.eq('12');
+
+		act(() => {
+			secondNumber$.set(-10);
+		});
+		expect(document.querySelector('h1')?.textContent).to.eq('0');
+
+		expect(firstNumber$.nOfSubscriptions).to.eq(1);
+		expect(secondNumber$.nOfSubscriptions).to.eq(1);
+		act(() => root.render(<></>));
+		expect(firstNumber$.nOfSubscriptions).to.eq(0);
+		expect(secondNumber$.nOfSubscriptions).to.eq(0);
 	});
 });

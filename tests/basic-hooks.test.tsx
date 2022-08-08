@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import enableJSDOM from 'jsdom-global';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {createRoot, Root} from 'react-dom/client';
 import {act} from 'react-dom/test-utils';
 import {
@@ -12,7 +12,7 @@ import {
 } from 'universal-stores';
 import {useReadonlyStore, useStore} from '../src/lib';
 
-describe('hooks', () => {
+describe('basic hooks', () => {
 	let disableJSDOM = () => undefined as void;
 	before(() => {
 		disableJSDOM = enableJSDOM();
@@ -212,14 +212,29 @@ describe('hooks', () => {
 		const store1$ = makeStore(1);
 		const store2$ = makeStore(2);
 		let renderCount = 0;
+		function Component() {
+			const [prop, setProp] = useState(store1$);
+			return (
+				<>
+					<button title="trigger" onClick={() => setProp(store2$)}>
+						click me
+					</button>
+					<div title="content">
+						<ToJSON store$={prop} onRender={() => renderCount++} />
+					</div>
+				</>
+			);
+		}
 		act(() => {
-			root.render(<ToJSON store$={store1$} onRender={() => renderCount++} />);
+			root.render(<Component />);
 		});
 		act(() => {
-			root.render(<ToJSON store$={store2$} onRender={() => renderCount++} />);
+			document.querySelector<HTMLButtonElement>('[title="trigger"]')?.click();
 		});
 		expect(renderCount).to.eq(2);
-		expect(document.body.textContent).to.eq(JSON.stringify(2));
+		expect(document.querySelector('[title="content"]')?.textContent).to.eq(
+			JSON.stringify(2),
+		);
 	});
 
 	it('keeps track of the number of subscriptions', () => {

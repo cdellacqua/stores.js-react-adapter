@@ -1,5 +1,11 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {ReadonlyStore, Store, Unsubscribe, Updater} from 'universal-stores';
+import {
+	makeDerivedStore,
+	ReadonlyStore,
+	Store,
+	Unsubscribe,
+	Updater,
+} from 'universal-stores';
 
 /**
  * Subscribe to a store, getting its most up-to-date value.
@@ -98,6 +104,69 @@ export function useReadonlyStore<T>(store: ReadonlyStore<T>): T {
 	}, []);
 
 	return contextRef.current.wrappedValue.value;
+}
+
+/**
+ * Subscribe to one or more stores, providing an array of all their values.
+ *
+ * Example:
+ *
+ * ```tsx
+ * const firstNumber$ = makeStore(4);
+ * const secondNumber$ = makeStore(2);
+ *
+ * function Sum() {
+ * 	const [firstNumber, secondNumber] = useReadonlyStores([firstNumber$, secondNumber$]);
+ * 	return (
+ * 		<>
+ * 			<h1>{firstNumber + secondNumber}</h1>
+ * 		</>
+ * 	);
+ * }
+ * ```
+ *
+ * @param stores one or more stores to subscribe to.
+ * @returns an array of all the values contained in the stores.
+ */
+export function useReadonlyStores<T extends [unknown, ...unknown[]]>(
+	stores:
+		| {
+				[P in keyof T]: ReadonlyStore<T[P]>;
+		  },
+): {
+	[P in keyof T]: T[P];
+} {
+	const previousContextRef = useRef<
+		| {
+				derived$: ReadonlyStore<[unknown, ...unknown[]]>;
+				stores: typeof stores;
+		  }
+		| undefined
+	>(undefined);
+
+	const previousContext = previousContextRef.current;
+
+	if (
+		!previousContext ||
+		// Emulating useMemo, but using a deep comparison.
+		previousContext.stores.length !== stores.length ||
+		previousContext.stores.some((s, i) => s !== stores[i])
+	) {
+		previousContextRef.current = {
+			stores,
+			derived$: makeDerivedStore(stores, (x) => x),
+		};
+	}
+
+	return useReadonlyStore(
+		(
+			previousContextRef.current as {
+				derived$: ReadonlyStore<{[P in keyof T]: T[P]}>;
+			}
+		).derived$,
+	) as {
+		[P in keyof T]: T[P];
+	};
 }
 
 /**
