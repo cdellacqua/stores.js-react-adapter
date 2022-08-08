@@ -31,6 +31,7 @@ export default defineConfig({
 				// for externalized deps
 				globals: {
 					react: 'React',
+					'universal-stores': 'universalStores',
 				},
 			},
 		},
