@@ -5,7 +5,7 @@ import {act} from 'react-dom/test-utils';
 import {makeReadonlyStore, makeStore} from 'universal-stores';
 import {useReadonlyStore, useReadonlyStores, useStore} from '../src/lib';
 
-describe('examples', () => {
+describe('hooks examples', () => {
 	let disableJSDOM = () => undefined as void;
 	before(() => {
 		disableJSDOM = enableJSDOM();

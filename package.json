@@ -34,7 +34,8 @@
 	"scripts": {
 		"coverage": "c8 npm run test",
 		"test": "cross-env NODE_ENV=test mocha 'tests/**/*.tsx'",
-		"dev": "vite",
+		"dev:hooks": "cross-env VITE_DEMO=hooks vite",
+		"dev:components": "vite",
 		"build": "vite build && tsc --project ./tsconfig.declarations.json",
 		"doc": "rimraf docs && typedoc --gitRevision main --readme none --plugin typedoc-plugin-markdown src/lib/index.ts",
 		"prepack": "npm run lint && npm run build && npm test && npm run doc",

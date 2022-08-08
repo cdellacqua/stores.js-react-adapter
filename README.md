@@ -1,6 +1,6 @@
 # @universal-stores/react-adapter
 
-A library that provides React Hooks for [universal-stores](https://www.npmjs.com/package/universal-stores) (observable containers of values).
+A library that provides React Hooks and components for [universal-stores](https://www.npmjs.com/package/universal-stores) (observable containers of values).
 
 [NPM Package](https://www.npmjs.com/package/@universal-stores/react-adapter)
 
@@ -27,7 +27,7 @@ import {useStore} from '@universal-stores/react-adapter';
 
 const count$ = makeStore(0);
 
-function MyComponent() {
+function Counter() {
 	const [count, setCount] = useStore(count$);
 	return (
 		<>
@@ -107,6 +107,77 @@ function Sum() {
 		<>
 			<h1>{firstNumber + secondNumber}</h1>
 		</>
+	);
+}
+```
+
+## Components
+
+If you only need the value of a store in a specific section of your JSX, you
+can use the following specialized component to optimize the Virtual DOM diffing
+process. The following component will make changes affect only a subtree of your main component.
+
+### WithStore
+
+Similar to `useStore`, it takes a `Store<T>` and a render prop as its children:
+
+```tsx
+import {makeStore} from 'universal-stores';
+import {WithStore} from '@universal-stores/react-adapter';
+
+const count$ = makeStore(0);
+
+function Counter() {
+	return (
+		<WithStore store={count$}>
+			{(count, setCount) => (
+				<>
+					<h1>Counter: {count}</h1>
+					<button onClick={() => setCount((c) => c + 1)}>Increment</button>
+					<button onClick={() => setCount(0)}>Reset</button>
+					<button onClick={() => setCount((c) => c - 1)}>Decrement</button>
+				</>
+			)}
+		</WithStore>
+	);
+}
+```
+
+### WithReadonlyStore
+
+Similar to `useReadonlyStore`, it takes a `ReadonlyStore<T>` (or a `Store<T>`) and a render prop as its children:
+
+```tsx
+import {makeStore} from 'universal-stores';
+import {WithReadonlyStore} from '@universal-stores/react-adapter';
+
+const count$ = makeStore(0);
+
+function Counter() {
+	return (
+		<WithReadonlyStore store={count$}>
+			{(count) => <h1>{count}</h1>}
+		</WithReadonlyStore>
+	);
+}
+```
+
+### WithReadonlyStores
+
+Similar to `useReadonlyStores`, it takes one or more `ReadonlyStore<T>`/`Store<T>` and a render prop as its children:
+
+```tsx
+import {makeStore} from 'universal-stores';
+import {WithReadonlyStores} from '@universal-stores/react-adapter';
+
+const firstNumber$ = makeStore(4);
+const secondNumber$ = makeStore(2);
+
+function Sum() {
+	return (
+		<WithReadonlyStores stores={[firstNumber$, secondNumber$]}>
+			{([firstNumber, secondNumber]) => <h1>{firstNumber + secondNumber}</h1>}
+		</WithReadonlyStores>
 	);
 }
 ```
