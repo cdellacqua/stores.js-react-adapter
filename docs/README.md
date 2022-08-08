@@ -333,7 +333,7 @@ an array of all the values contained in the stores.
 
 #### Defined in
 
-[hooks.ts:131](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L131)
+[hooks.ts:134](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L134)
 
 ___
 
@@ -381,4 +381,4 @@ a tuple containing the current value and a setter.
 
 #### Defined in
 
-[hooks.ts:196](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L196)
+[hooks.ts:199](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L199)
