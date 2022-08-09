@@ -8,7 +8,6 @@ import {
 	makeStore,
 	ReadonlyStore,
 	Store,
-	Updater,
 } from 'universal-stores';
 import {useReadonlyStore, useStore} from '../src/lib';
 
@@ -43,7 +42,9 @@ describe('basic hooks', () => {
 		onRender?: () => void;
 	}) {
 		const store = useReadonlyStore(store$);
-		onRender?.();
+		useEffect(() => {
+			onRender?.();
+		});
 		return <>{JSON.stringify(store)}</>;
 	}
 
@@ -90,11 +91,11 @@ describe('basic hooks', () => {
 		act(() => {
 			root.render(<ToJSON store$={store$} onRender={() => renderCount++} />);
 		});
-		expect(renderCount).to.eq(1);
+		expect(renderCount).to.eq(2);
 		act(() => {
 			store$.set(42);
 		});
-		expect(renderCount).to.eq(2);
+		expect(renderCount).to.eq(3);
 		expect(document.body.textContent).to.eq(JSON.stringify(42));
 	});
 
@@ -108,27 +109,12 @@ describe('basic hooks', () => {
 		target: T;
 	}) {
 		const [store, setStore] = useStore(store$);
-		onRender?.();
+		useEffect(() => {
+			onRender?.();
+		});
 		useEffect(() => {
 			setStore(target);
 		}, [target, setStore]);
-		return <>{JSON.stringify(store)}</>;
-	}
-
-	function ToJSONWithUpdate<T>({
-		store$,
-		onRender,
-		updater,
-	}: {
-		store$: Store<T>;
-		onRender?: () => void;
-		updater: Updater<T>;
-	}) {
-		const [store, setStore] = useStore(store$);
-		onRender?.();
-		useEffect(() => {
-			setStore(updater);
-		}, [updater, setStore]);
 		return <>{JSON.stringify(store)}</>;
 	}
 
@@ -154,15 +140,12 @@ describe('basic hooks', () => {
 		const store$ = makeStore(initialValue);
 		let renderCount = 0;
 		act(() => {
-			root.render(
-				<ToJSONWithUpdate
-					store$={store$}
-					updater={(c) => c + 1}
-					onRender={() => renderCount++}
-				/>,
-			);
+			root.render(<ToJSON store$={store$} onRender={() => renderCount++} />);
 		});
-		expect(renderCount).to.eq(2);
+		act(() => {
+			store$.update((c) => c + 1);
+		});
+		expect(renderCount).to.eq(3);
 		expect(document.body.textContent).to.eq(JSON.stringify(initialValue + 1));
 	});
 
@@ -173,18 +156,16 @@ describe('basic hooks', () => {
 		});
 		let renderCount = 0;
 		act(() => {
-			root.render(
-				<ToJSONWithUpdate
-					store$={store$}
-					updater={(c) => {
-						c.content = 42;
-						return c;
-					}}
-					onRender={() => renderCount++}
-				/>,
-			);
+			root.render(<ToJSON store$={store$} onRender={() => renderCount++} />);
 		});
 		expect(renderCount).to.eq(2);
+		act(() => {
+			store$.update((c) => {
+				c.content = 42;
+				return c;
+			});
+		});
+		expect(renderCount).to.eq(3);
 		expect(document.body.textContent).to.eq(JSON.stringify(initialValue));
 	});
 
@@ -193,24 +174,22 @@ describe('basic hooks', () => {
 		const store$ = makeStore(initialValue);
 		let renderCount = 0;
 		act(() => {
-			root.render(
-				<ToJSONWithUpdate
-					store$={store$}
-					updater={(c) => {
-						c.content = 42;
-						return c;
-					}}
-					onRender={() => renderCount++}
-				/>,
-			);
+			root.render(<ToJSON store$={store$} onRender={() => renderCount++} />);
 		});
-		expect(renderCount).to.eq(1);
+		expect(renderCount).to.eq(2);
+		act(() => {
+			store$.update((c) => {
+				c.content = 42;
+				return c;
+			});
+		});
+		expect(renderCount).to.eq(2);
 		expect(document.body.textContent).to.eq(JSON.stringify({content: 73}));
 	});
 
 	it('checks that a component re-renders if the store passed as prop changes', () => {
 		const store1$ = makeStore(1);
-		const store2$ = makeStore(2);
+		const store2$ = makeStore(10);
 		let renderCount = 0;
 		function Component() {
 			const [prop, setProp] = useState(store1$);
@@ -228,13 +207,15 @@ describe('basic hooks', () => {
 		act(() => {
 			root.render(<Component />);
 		});
+		expect(renderCount).to.eq(2);
 		act(() => {
 			document.querySelector<HTMLButtonElement>('[title="trigger"]')?.click();
 		});
-		expect(renderCount).to.eq(2);
+		expect(renderCount).to.eq(4);
 		expect(document.querySelector('[title="content"]')?.textContent).to.eq(
-			JSON.stringify(2),
+			JSON.stringify(10),
 		);
+		expect(renderCount).to.eq(4);
 	});
 
 	it('keeps track of the number of subscriptions', () => {
@@ -246,25 +227,81 @@ describe('basic hooks', () => {
 			root.render(<ToJSON store$={store1$} onRender={() => renderCount++} />);
 		});
 		expect(store1$.nOfSubscriptions).to.eq(1);
-		expect(renderCount).to.eq(1);
+		expect(renderCount).to.eq(2);
 		act(() => {
 			store1$.set(2);
 		});
 		expect(store1$.nOfSubscriptions).to.eq(1);
-		expect(renderCount).to.eq(2);
+		expect(renderCount).to.eq(3);
 
 		act(() => {
 			root.render(<ToJSON store$={store2$} onRender={() => renderCount++} />);
 		});
 		expect(store1$.nOfSubscriptions).to.eq(0);
 		expect(store2$.nOfSubscriptions).to.eq(1);
-		expect(renderCount).to.eq(3);
+		expect(renderCount).to.eq(5);
 
 		act(() => {
 			root.render(<></>);
 		});
 		expect(store1$.nOfSubscriptions).to.eq(0);
 		expect(store2$.nOfSubscriptions).to.eq(0);
-		expect(renderCount).to.eq(3);
+		expect(renderCount).to.eq(5);
+	});
+
+	it('tests the number of initializations and subscriptions that occur on a lazy store', async () => {
+		const initialValue = 73;
+		let initializations = 0;
+		let subscriptions = 0;
+		let unsubscriptions = 0;
+		const originalStore = makeStore(initialValue, () => {
+			initializations++;
+		});
+		const mockedStore: typeof originalStore = {
+			set: originalStore.set,
+			update: originalStore.update,
+			get value() {
+				subscriptions++;
+				unsubscriptions++;
+				return originalStore.value;
+			},
+			get nOfSubscriptions() {
+				return originalStore.nOfSubscriptions;
+			},
+			subscribe: (cb) => {
+				subscriptions++;
+				const unsubscribe = originalStore.subscribe(cb);
+				return () => {
+					unsubscriptions++;
+					unsubscribe();
+				};
+			},
+		};
+		const store$ = mockedStore;
+		let renders = 0;
+		act(() => {
+			root.render(<ToJSON store$={store$} onRender={() => renders++} />);
+		});
+		expect(initializations).to.eq(2);
+		expect(document.body.textContent).to.eq(JSON.stringify(initialValue));
+		expect(unsubscriptions).to.eq(1);
+		expect(subscriptions).to.eq(2);
+		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		act(() => {
+			store$.set(10);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify(10));
+		act(() => {
+			store$.set(20);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify(20));
+		expect(renders).to.eq(4);
+		expect(initializations).to.eq(2);
+		expect(unsubscriptions).to.eq(1);
+		expect(subscriptions).to.eq(2);
+		act(() => {
+			root.render(<></>);
+		});
+		expect(unsubscriptions).to.eq(2);
 	});
 });

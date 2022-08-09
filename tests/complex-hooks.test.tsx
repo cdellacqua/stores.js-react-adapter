@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 import enableJSDOM from 'jsdom-global';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {createRoot, Root} from 'react-dom/client';
 import {act} from 'react-dom/test-utils';
 import {makeReadonlyStore, makeStore, ReadonlyStore} from 'universal-stores';
 import {useReadonlyStores} from '../src/lib';
 
-describe('hooks', () => {
+describe('complex hooks', () => {
 	let disableJSDOM = () => undefined as void;
 	before(() => {
 		disableJSDOM = enableJSDOM();
@@ -39,7 +39,9 @@ describe('hooks', () => {
 		onRender?: () => void;
 	}) {
 		const values = useReadonlyStores(stores);
-		onRender?.();
+		useEffect(() => {
+			onRender?.();
+		});
 		return <>{JSON.stringify(values)}</>;
 	}
 
@@ -169,5 +171,79 @@ describe('hooks', () => {
 
 		expect(store1$.nOfSubscriptions).to.eq(0);
 		expect(store2$.nOfSubscriptions).to.eq(0);
+	});
+
+	function ToJSONMulti<T>({
+		stores,
+		onRender,
+	}: {
+		stores: [ReadonlyStore<T>, ...ReadonlyStore<T>[]];
+		onRender?: () => void;
+	}) {
+		const values = useReadonlyStores(stores);
+		useEffect(() => {
+			onRender?.();
+		});
+		return <>{JSON.stringify(values)}</>;
+	}
+
+	it('tests the number of initializations and subscriptions that occur on multiple lazy stores', async () => {
+		const initialValue = 73;
+		let initializations = 0;
+		let subscriptions = 0;
+		let unsubscriptions = 0;
+		const originalStore = makeStore(initialValue, () => {
+			initializations++;
+		});
+		const mockedStore: typeof originalStore = {
+			set: originalStore.set,
+			update: originalStore.update,
+			get value() {
+				subscriptions++;
+				unsubscriptions++;
+				return originalStore.value;
+			},
+			get nOfSubscriptions() {
+				return originalStore.nOfSubscriptions;
+			},
+			subscribe: (cb) => {
+				subscriptions++;
+				const unsubscribe = originalStore.subscribe(cb);
+				return () => {
+					unsubscriptions++;
+					unsubscribe();
+				};
+			},
+		};
+		const store1$ = mockedStore;
+		const store2$ = makeStore(0);
+		let renders = 0;
+		act(() => {
+			root.render(
+				<ToJSONMulti stores={[store1$, store2$]} onRender={() => renders++} />,
+			);
+		});
+		expect(renders).to.eq(2);
+		expect(initializations).to.eq(2);
+		expect(document.body.textContent).to.eq(JSON.stringify([initialValue, 0]));
+		expect(unsubscriptions).to.eq(1);
+		expect(subscriptions).to.eq(2);
+		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		act(() => {
+			store1$.set(10);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify([10, 0]));
+		act(() => {
+			store2$.set(20);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify([10, 20]));
+		expect(renders).to.eq(4);
+		expect(initializations).to.eq(2);
+		expect(unsubscriptions).to.eq(1);
+		expect(subscriptions).to.eq(2);
+		act(() => {
+			root.render(<></>);
+		});
+		expect(unsubscriptions).to.eq(2);
 	});
 });

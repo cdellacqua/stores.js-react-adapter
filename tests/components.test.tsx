@@ -51,7 +51,7 @@ describe('components', () => {
 			count$.set(10);
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('10');
-		expect(renders).to.eq(2);
+		expect(renders).to.eq(3);
 	});
 	it('WithReadonlyStore: tests rerenders when the parent rerenders', () => {
 		const count$ = makeStore(4);
@@ -82,12 +82,12 @@ describe('components', () => {
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('10');
 		expect(parentRenders).to.eq(1);
-		expect(childrenRenders).to.eq(2);
+		expect(childrenRenders).to.eq(3);
 		act(() => {
 			document.querySelector<HTMLButtonElement>('button')?.click();
 		});
 		expect(parentRenders).to.eq(2);
-		expect(childrenRenders).to.eq(3);
+		expect(childrenRenders).to.eq(4);
 	});
 
 	it("WithReadonlyStores: tests rerenders when the parent component doesn't change", () => {
@@ -117,7 +117,7 @@ describe('components', () => {
 			secondNumber$.update(() => -10);
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('0');
-		expect(renders).to.eq(3);
+		expect(renders).to.eq(4);
 	});
 	it('WithReadonlyStores: tests rerenders when the parent rerenders', () => {
 		const firstNumber$ = makeStore(4);
@@ -153,12 +153,12 @@ describe('components', () => {
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('0');
 		expect(parentRenders).to.eq(1);
-		expect(childrenRenders).to.eq(3);
+		expect(childrenRenders).to.eq(4);
 		act(() => {
 			document.querySelector<HTMLButtonElement>('button')?.click();
 		});
 		expect(parentRenders).to.eq(2);
-		expect(childrenRenders).to.eq(4);
+		expect(childrenRenders).to.eq(5);
 	});
 
 	it('WithReadonlyStores: tests that the output changes when the stores are rearranged', () => {
@@ -188,15 +188,16 @@ describe('components', () => {
 			root.render(<Sub />);
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('2');
-		expect(renders).to.eq(1);
+		expect(renders).to.eq(2);
 		act(() => {
 			document.querySelector<HTMLButtonElement>('button')?.click();
 		});
+		expect(renders).to.eq(5);
 		expect(document.querySelector('h1')?.textContent).to.eq('-2');
 		act(() => {
 			firstNumber$.set(10);
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('-8');
-		expect(renders).to.eq(3);
+		expect(renders).to.eq(6);
 	});
 });

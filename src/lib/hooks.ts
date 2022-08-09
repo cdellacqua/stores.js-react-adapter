@@ -1,9 +1,8 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
 	makeDerivedStore,
 	ReadonlyStore,
 	Store,
-	Unsubscribe,
 	Updater,
 } from 'universal-stores';
 
@@ -53,60 +52,18 @@ import {
  * @returns the up-to-date value of the store.
  */
 export function useReadonlyStore<T>(store: ReadonlyStore<T>): T {
-	// This state is used to let React know when it should schedule a re-render of the component
-	// that's using this hook.
-	// The reason we are not storing the store value directly via useState is
-	// that useState has a deduplication mechanism based on the the strict
-	// equality operator (===), while stores support a custom equality comparator
-	// function.
-	const [, setRerenderFlag] = useState(0);
-	// We store the important information in a Ref, so that it persists until the
-	// component gets unmounted.
-	const contextRef = useRef<
-		| {
-				unsubscribe: Unsubscribe;
-				wrappedValue: {value: T};
-				store: ReadonlyStore<T>;
-		  }
-		| undefined
-	>(undefined);
-
-	// If it's the first time this hook is being executed
-	// OR
-	// the store passed to this hook has changed.
-	if (!contextRef.current || contextRef.current.store !== store) {
-		contextRef.current?.unsubscribe();
-		const wrappedValue = {value: undefined as unknown as T};
-		// This flag prevents a useless re-render.
-		let firstSubscriberCall = true;
-		contextRef.current = {
-			store,
-			wrappedValue,
-			unsubscribe: store.subscribe((v) => {
-				// Accessing the value using the wrapper.
-				wrappedValue.value = v;
-
-				if (firstSubscriberCall) {
-					firstSubscriberCall = false;
-					return;
-				}
-				// If we get here, we need to notify React that the component
-				// state has changed and it should therefore re-render it
-				// to keep it in sync with the UI.
-				setRerenderFlag((r) => (r + 1) % Number.MAX_SAFE_INTEGER);
-			}),
-		};
-	}
+	const [context, setContext] = useState(() => {
+		return {value: store.value};
+	});
 
 	useEffect(() => {
-		// Unsubscribe once the component gets unmounted.
-		return () => {
-			contextRef.current?.unsubscribe();
-			contextRef.current = undefined;
-		};
-	}, []);
+		const unsubscribe = store.subscribe((value) => {
+			setContext({value});
+		});
+		return unsubscribe;
+	}, [store]);
 
-	return contextRef.current.wrappedValue.value;
+	return context.value;
 }
 
 /**
@@ -139,6 +96,11 @@ export function useReadonlyStores<T extends [unknown, ...unknown[]]>(
 ): {
 	[P in keyof T]: T[P];
 } {
+	const [context, setContext] = useState(() => ({
+		derived$: makeDerivedStore(stores, (x) => x),
+		stores,
+	}));
+	/* 
 	const previousContextRef = useRef<
 		| {
 				derived$: ReadonlyStore<[unknown, ...unknown[]]>;
@@ -159,15 +121,22 @@ export function useReadonlyStores<T extends [unknown, ...unknown[]]>(
 			stores,
 			derived$: makeDerivedStore(stores, (x) => x),
 		};
-	}
+	} */
 
-	return useReadonlyStore(
-		(
-			previousContextRef.current as {
-				derived$: ReadonlyStore<{[P in keyof T]: T[P]}>;
-			}
-		).derived$,
-	) as {
+	useEffect(() => {
+		if (
+			// Emulating useMemo, but using a deep comparison.
+			context.stores.length !== stores.length ||
+			context.stores.some((s, i) => s !== stores[i])
+		) {
+			setContext({
+				stores,
+				derived$: makeDerivedStore(stores, (x) => x),
+			});
+		}
+	}, [stores, context.stores]);
+
+	return useReadonlyStore(context.derived$) as {
 		[P in keyof T]: T[P];
 	};
 }

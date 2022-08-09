@@ -287,7 +287,7 @@ the up-to-date value of the store.
 
 #### Defined in
 
-[hooks.ts:55](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L55)
+[hooks.ts:54](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L54)
 
 ___
 
@@ -333,7 +333,7 @@ an array of all the values contained in the stores.
 
 #### Defined in
 
-[hooks.ts:134](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L134)
+[hooks.ts:91](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L91)
 
 ___
 
@@ -381,4 +381,4 @@ a tuple containing the current value and a setter.
 
 #### Defined in
 
-[hooks.ts:199](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L199)
+[hooks.ts:168](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L168)
