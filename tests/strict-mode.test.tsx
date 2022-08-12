@@ -93,11 +93,11 @@ describe('strict mode', () => {
 		});
 		expect(document.body.textContent).to.eq(JSON.stringify(20));
 		expect(renders).to.eq(5);
-		expect(store$.nOfSubscriptions).to.eq(1);
+		expect(store$.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			root.render(<StrictMode></StrictMode>);
 		});
-		expect(store$.nOfSubscriptions).to.eq(0);
+		expect(store$.nOfSubscriptions()).to.eq(0);
 	});
 
 	it('tests the number of initializations and subscriptions that occur on a lazy store', async () => {
@@ -111,14 +111,12 @@ describe('strict mode', () => {
 		const mockedStore: typeof originalStore = {
 			set: originalStore.set,
 			update: originalStore.update,
-			get value() {
+			content() {
 				subscriptions++;
 				unsubscriptions++;
-				return originalStore.value;
+				return originalStore.content();
 			},
-			get nOfSubscriptions() {
-				return originalStore.nOfSubscriptions;
-			},
+			nOfSubscriptions: originalStore.nOfSubscriptions,
 			subscribe: (cb) => {
 				subscriptions++;
 				const unsubscribe = originalStore.subscribe(cb);
@@ -141,7 +139,7 @@ describe('strict mode', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify(initialValue));
 		expect(unsubscriptions).to.eq(3);
 		expect(subscriptions).to.eq(4);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			store$.set(10);
 		});
@@ -171,14 +169,12 @@ describe('strict mode', () => {
 		const mockedStore: typeof originalStore = {
 			set: originalStore.set,
 			update: originalStore.update,
-			get value() {
+			content() {
 				subscriptions++;
 				unsubscriptions++;
-				return originalStore.value;
+				return originalStore.content();
 			},
-			get nOfSubscriptions() {
-				return originalStore.nOfSubscriptions;
-			},
+			nOfSubscriptions: originalStore.nOfSubscriptions,
 			subscribe: (cb) => {
 				subscriptions++;
 				const unsubscribe = originalStore.subscribe(cb);
@@ -202,7 +198,7 @@ describe('strict mode', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify([initialValue, 0]));
 		expect(unsubscriptions).to.eq(3);
 		expect(subscriptions).to.eq(4);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			store1$.set(10);
 		});
@@ -232,14 +228,12 @@ describe('strict mode', () => {
 		const mockedStore: typeof originalStore = {
 			set: originalStore.set,
 			update: originalStore.update,
-			get value() {
+			content() {
 				subscriptions++;
 				unsubscriptions++;
-				return originalStore.value;
+				return originalStore.content();
 			},
-			get nOfSubscriptions() {
-				return originalStore.nOfSubscriptions;
-			},
+			nOfSubscriptions: originalStore.nOfSubscriptions,
 			subscribe: (cb) => {
 				subscriptions++;
 				const unsubscribe = originalStore.subscribe(cb);
@@ -264,7 +258,7 @@ describe('strict mode', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify([initialValue, 0]));
 		expect(unsubscriptions).to.eq(3);
 		expect(subscriptions).to.eq(4);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			root.render(
 				<StrictMode>
@@ -277,7 +271,7 @@ describe('strict mode', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify([0, initialValue]));
 		expect(unsubscriptions).to.eq(4);
 		expect(subscriptions).to.eq(5);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			root.render(<StrictMode></StrictMode>);
 		});
@@ -295,14 +289,12 @@ describe('strict mode', () => {
 		const mockedStore: typeof originalStore = {
 			set: originalStore.set,
 			update: originalStore.update,
-			get value() {
+			content() {
 				subscriptions++;
 				unsubscriptions++;
-				return originalStore.value;
+				return originalStore.content();
 			},
-			get nOfSubscriptions() {
-				return originalStore.nOfSubscriptions;
-			},
+			nOfSubscriptions: originalStore.nOfSubscriptions,
 			subscribe: (cb) => {
 				subscriptions++;
 				const unsubscribe = originalStore.subscribe(cb);
@@ -328,7 +320,7 @@ describe('strict mode', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify([initialValue, 0]));
 		expect(unsubscriptions).to.eq(3);
 		expect(subscriptions).to.eq(4);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			root.render(
 				<StrictMode>
@@ -341,7 +333,7 @@ describe('strict mode', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify([87]));
 		expect(unsubscriptions).to.eq(4);
 		expect(subscriptions).to.eq(4);
-		expect(mockedStore.nOfSubscriptions).to.eq(0);
+		expect(mockedStore.nOfSubscriptions()).to.eq(0);
 		act(() => {
 			root.render(<StrictMode></StrictMode>);
 		});

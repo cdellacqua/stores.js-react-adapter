@@ -50,9 +50,9 @@ ___
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`unknown`, ...unknown[]] |
+| Name |
+| :------ |
+| `T` |
 
 #### Type declaration
 
@@ -134,10 +134,26 @@ ___
 
 ▸ **WithReadonlyStores**<`T`\>(`__namedParameters`): `React.ReactElement`
 
-Subscribe to a one or more Store/ReadonlyStore and pass their values
+Subscribe to a a collection of Store/ReadonlyStore and pass their values
 to the children of this component.
 
-Example:
+Example using an object:
+
+```tsx
+const firstNumber$ = makeStore(4);
+const secondNumber$ = makeStore(2);
+
+function Sum() {
+	return (
+		<WithReadonlyStores stores={{first: firstNumber$, second: secondNumber$}}>
+			{({first, second}) => <h1>{first + second}</h1>}
+		</WithReadonlyStores>
+	);
+}
+```
+
+Example using an array:
+
 ```tsx
 const firstNumber$ = makeStore(4);
 const secondNumber$ = makeStore(2);
@@ -153,9 +169,9 @@ function Sum() {
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`unknown`, ...unknown[]] |
+| Name |
+| :------ |
+| `T` |
 
 #### Parameters
 
@@ -169,7 +185,7 @@ function Sum() {
 
 #### Defined in
 
-[components.tsx:112](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/components.tsx#L112)
+[components.tsx:128](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/components.tsx#L128)
 
 ___
 
@@ -295,9 +311,24 @@ ___
 
 ▸ **useReadonlyStores**<`T`\>(`stores`): { [P in keyof T]: T[P] }
 
-Subscribe to one or more stores, providing an array of all their values.
+Subscribe to multiple stores, providing an object or an array of all their values.
 
-Example:
+Example using an object:
+
+```ts
+const firstNumber$ = makeStore(4);
+const secondNumber$ = makeStore(2);
+
+function Sum() {
+	return (
+		<WithReadonlyStores stores={{first: firstNumber$, second: secondNumber$}}>
+			{({first, second}) => <h1>{first + second}</h1>}
+		</WithReadonlyStores>
+	);
+}
+```
+
+Example using an array:
 
 ```tsx
 const firstNumber$ = makeStore(4);
@@ -315,25 +346,25 @@ function Sum() {
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`unknown`, ...unknown[]] |
+| Name |
+| :------ |
+| `T` |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `stores` | { [P in string \| number \| symbol]: ReadonlyStore<T[P]\> } | one or more stores to subscribe to. |
+| `stores` | { [P in string \| number \| symbol]: ReadonlyStore<T[P]\> } | an object or an array of stores to subscribe to. |
 
 #### Returns
 
 { [P in keyof T]: T[P] }
 
-an array of all the values contained in the stores.
+an object or an array of all the values contained in the stores, depending on the type of the argument.
 
 #### Defined in
 
-[hooks.ts:91](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L91)
+[hooks.ts:106](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L106)
 
 ___
 
@@ -381,4 +412,4 @@ a tuple containing the current value and a setter.
 
 #### Defined in
 
-[hooks.ts:168](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L168)
+[hooks.ts:163](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L163)

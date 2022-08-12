@@ -89,7 +89,31 @@ function Counter() {
 ### useReadonlyStores
 
 `useReadonlyStores` can be used to observe multiple stores at once.
-It takes an array of `ReadonlyStore`s and/or `Store`s and returns an array of values contained in them.
+It takes an object or an array of `ReadonlyStore`s and/or `Store`s and returns an object or an array of values contained in them.
+
+Example using an object:
+
+```tsx
+import {makeStore} from 'universal-stores';
+import {useReadonlyStores} from '@universal-stores/react-adapter';
+
+const firstNumber$ = makeStore(4);
+const secondNumber$ = makeStore(2);
+
+function Sum() {
+	const {first, second} = useReadonlyStores({
+		first: firstNumber$,
+		second: secondNumber$,
+	});
+	return (
+		<>
+			<h1>{first + second}</h1>
+		</>
+	);
+}
+```
+
+Example using an array
 
 ```tsx
 import {makeStore} from 'universal-stores';
@@ -164,7 +188,27 @@ function Counter() {
 
 ### WithReadonlyStores
 
-Similar to `useReadonlyStores`, it takes one or more `ReadonlyStore<T>`/`Store<T>` and a render prop as its children:
+Similar to `useReadonlyStores`, it takes a collection of `ReadonlyStore<T>`/`Store<T>` and a render prop as its children.
+
+Example using an object:
+
+```tsx
+import {makeStore} from 'universal-stores';
+import {WithReadonlyStores} from '@universal-stores/react-adapter';
+
+const firstNumber$ = makeStore(4);
+const secondNumber$ = makeStore(2);
+
+function Sum() {
+	return (
+		<WithReadonlyStores stores={{first: firstNumber$, second: secondNumber$}}>
+			{({first, second}) => <h1>{first + second}</h1>}
+		</WithReadonlyStores>
+	);
+}
+```
+
+Example using an array:
 
 ```tsx
 import {makeStore} from 'universal-stores';

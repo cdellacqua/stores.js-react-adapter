@@ -29,7 +29,7 @@ describe('complex hooks', () => {
 		});
 	});
 
-	function ToJSON<T extends [unknown, ...unknown[]]>({
+	function ToJSON<T>({
 		stores,
 		onRender,
 	}: {
@@ -116,8 +116,8 @@ describe('complex hooks', () => {
 		act(() => {
 			root.render(<Component />);
 		});
-		expect(store1$.nOfSubscriptions).to.eq(1);
-		expect(store2$.nOfSubscriptions).to.eq(0);
+		expect(store1$.nOfSubscriptions()).to.eq(1);
+		expect(store2$.nOfSubscriptions()).to.eq(0);
 		act(() => {
 			const btn =
 				document.querySelector<HTMLButtonElement>('[title="trigger"]');
@@ -125,14 +125,14 @@ describe('complex hooks', () => {
 		});
 		const div = document.querySelector('[title="content"]');
 		expect(div?.textContent).to.eq(JSON.stringify([2]));
-		expect(store1$.nOfSubscriptions).to.eq(0);
-		expect(store2$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
+		expect(store2$.nOfSubscriptions()).to.eq(1);
 	});
 
 	it('keeps track of the number of subscriptions', async () => {
 		const store1$ = makeStore(1);
 		const store2$ = makeStore(1);
-		expect(store1$.nOfSubscriptions).to.eq(0);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
 
 		function Component() {
 			const [prop, setProp] = useState(store1$);
@@ -151,41 +151,27 @@ describe('complex hooks', () => {
 			root.render(<Component />);
 		});
 
-		expect(store1$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			store1$.set(2);
 		});
-		expect(store1$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(1);
 
 		const btn = document.querySelector<HTMLButtonElement>('[title="trigger"]');
 		act(() => {
 			btn?.click();
 		});
 
-		expect(store1$.nOfSubscriptions).to.eq(0);
-		expect(store2$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
+		expect(store2$.nOfSubscriptions()).to.eq(1);
 
 		act(() => {
 			root.render(<></>);
 		});
 
-		expect(store1$.nOfSubscriptions).to.eq(0);
-		expect(store2$.nOfSubscriptions).to.eq(0);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
+		expect(store2$.nOfSubscriptions()).to.eq(0);
 	});
-
-	function ToJSONMulti<T>({
-		stores,
-		onRender,
-	}: {
-		stores: [ReadonlyStore<T>, ...ReadonlyStore<T>[]];
-		onRender?: () => void;
-	}) {
-		const values = useReadonlyStores(stores);
-		useEffect(() => {
-			onRender?.();
-		});
-		return <>{JSON.stringify(values)}</>;
-	}
 
 	it('tests the number of initializations and subscriptions that occur on multiple lazy stores', async () => {
 		const initialValue = 73;
@@ -198,14 +184,12 @@ describe('complex hooks', () => {
 		const mockedStore: typeof originalStore = {
 			set: originalStore.set,
 			update: originalStore.update,
-			get value() {
+			content() {
 				subscriptions++;
 				unsubscriptions++;
-				return originalStore.value;
+				return originalStore.content();
 			},
-			get nOfSubscriptions() {
-				return originalStore.nOfSubscriptions;
-			},
+			nOfSubscriptions: originalStore.nOfSubscriptions,
 			subscribe: (cb) => {
 				subscriptions++;
 				const unsubscribe = originalStore.subscribe(cb);
@@ -220,7 +204,7 @@ describe('complex hooks', () => {
 		let renders = 0;
 		act(() => {
 			root.render(
-				<ToJSONMulti stores={[store1$, store2$]} onRender={() => renders++} />,
+				<ToJSON stores={[store1$, store2$]} onRender={() => renders++} />,
 			);
 		});
 		expect(renders).to.eq(2);
@@ -228,7 +212,7 @@ describe('complex hooks', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify([initialValue, 0]));
 		expect(unsubscriptions).to.eq(1);
 		expect(subscriptions).to.eq(2);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			store1$.set(10);
 		});
@@ -245,5 +229,37 @@ describe('complex hooks', () => {
 			root.render(<></>);
 		});
 		expect(unsubscriptions).to.eq(2);
+	});
+
+	it('tests that useReadableStores can accept both an object and an array', () => {
+		const store1$ = makeStore(2);
+		const store2$ = makeStore(3);
+		act(() => {
+			root.render(<ToJSON stores={[store1$, store2$]} />);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify([2, 3]));
+		act(() => {
+			root.render(<ToJSON stores={{v1: store1$, v2: store2$}} />);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify({v1: 2, v2: 3}));
+		act(() => {
+			root.render(<></>);
+		});
+		expect(store1$.nOfSubscriptions()).to.eq(0);
+		expect(store2$.nOfSubscriptions()).to.eq(0);
+	});
+
+	it('tests that useReadableStores can accept an empty array', () => {
+		act(() => {
+			root.render(<ToJSON stores={[]} />);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify([]));
+	});
+
+	it('tests that useReadableStores can accept an empty object', () => {
+		act(() => {
+			root.render(<ToJSON stores={{}} />);
+		});
+		expect(document.body.textContent).to.eq(JSON.stringify({}));
 	});
 });

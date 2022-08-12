@@ -222,30 +222,30 @@ describe('basic hooks', () => {
 		const store1$ = makeStore(1);
 		const store2$ = makeStore(1);
 		let renderCount = 0;
-		expect(store1$.nOfSubscriptions).to.eq(0);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
 		act(() => {
 			root.render(<ToJSON store$={store1$} onRender={() => renderCount++} />);
 		});
-		expect(store1$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(1);
 		expect(renderCount).to.eq(2);
 		act(() => {
 			store1$.set(2);
 		});
-		expect(store1$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(1);
 		expect(renderCount).to.eq(3);
 
 		act(() => {
 			root.render(<ToJSON store$={store2$} onRender={() => renderCount++} />);
 		});
-		expect(store1$.nOfSubscriptions).to.eq(0);
-		expect(store2$.nOfSubscriptions).to.eq(1);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
+		expect(store2$.nOfSubscriptions()).to.eq(1);
 		expect(renderCount).to.eq(5);
 
 		act(() => {
 			root.render(<></>);
 		});
-		expect(store1$.nOfSubscriptions).to.eq(0);
-		expect(store2$.nOfSubscriptions).to.eq(0);
+		expect(store1$.nOfSubscriptions()).to.eq(0);
+		expect(store2$.nOfSubscriptions()).to.eq(0);
 		expect(renderCount).to.eq(5);
 	});
 
@@ -260,14 +260,12 @@ describe('basic hooks', () => {
 		const mockedStore: typeof originalStore = {
 			set: originalStore.set,
 			update: originalStore.update,
-			get value() {
+			content() {
 				subscriptions++;
 				unsubscriptions++;
-				return originalStore.value;
+				return originalStore.content();
 			},
-			get nOfSubscriptions() {
-				return originalStore.nOfSubscriptions;
-			},
+			nOfSubscriptions: originalStore.nOfSubscriptions,
 			subscribe: (cb) => {
 				subscriptions++;
 				const unsubscribe = originalStore.subscribe(cb);
@@ -286,7 +284,7 @@ describe('basic hooks', () => {
 		expect(document.body.textContent).to.eq(JSON.stringify(initialValue));
 		expect(unsubscriptions).to.eq(1);
 		expect(subscriptions).to.eq(2);
-		expect(mockedStore.nOfSubscriptions).to.eq(1);
+		expect(mockedStore.nOfSubscriptions()).to.eq(1);
 		act(() => {
 			store$.set(10);
 		});

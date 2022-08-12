@@ -78,7 +78,7 @@ export function WithReadonlyStore<T>({
 	return <>{children(value)}</>;
 }
 
-export type WithReadonlyStoresProps<T extends [unknown, ...unknown[]]> = {
+export type WithReadonlyStoresProps<T> = {
 	stores: {
 		[P in keyof T]: ReadonlyStore<T[P]>;
 	};
@@ -88,10 +88,26 @@ export type WithReadonlyStoresProps<T extends [unknown, ...unknown[]]> = {
 };
 
 /**
- * Subscribe to a one or more Store/ReadonlyStore and pass their values
+ * Subscribe to a a collection of Store/ReadonlyStore and pass their values
  * to the children of this component.
  *
- * Example:
+ * Example using an object:
+ *
+ * ```tsx
+ * const firstNumber$ = makeStore(4);
+ * const secondNumber$ = makeStore(2);
+ *
+ * function Sum() {
+ * 	return (
+ * 		<WithReadonlyStores stores={{first: firstNumber$, second: secondNumber$}}>
+ * 			{({first, second}) => <h1>{first + second}</h1>}
+ * 		</WithReadonlyStores>
+ * 	);
+ * }
+ * ```
+ *
+ * Example using an array:
+ *
  * ```tsx
  * const firstNumber$ = makeStore(4);
  * const secondNumber$ = makeStore(2);
@@ -106,10 +122,10 @@ export type WithReadonlyStoresProps<T extends [unknown, ...unknown[]]> = {
  * ```
  *
  * @param props.stores a collection of Store and/or ReadonlyStore.
- * @param props.children a render prop that takes an array of all the values contained in the stores as its parameter.
+ * @param props.children a render prop that takes an object or an array of all the values contained in the stores as its parameter.
  * @returns {React.ReactElement}
  */
-export function WithReadonlyStores<T extends [unknown, ...unknown[]]>({
+export function WithReadonlyStores<T>({
 	stores,
 	children,
 }: WithReadonlyStoresProps<T>): React.ReactElement {

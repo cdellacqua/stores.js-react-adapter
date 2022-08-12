@@ -161,10 +161,10 @@ describe('hooks examples', () => {
 		});
 		expect(document.querySelector('h1')?.textContent).to.eq('0');
 
-		expect(firstNumber$.nOfSubscriptions).to.eq(1);
-		expect(secondNumber$.nOfSubscriptions).to.eq(1);
+		expect(firstNumber$.nOfSubscriptions()).to.eq(1);
+		expect(secondNumber$.nOfSubscriptions()).to.eq(1);
 		act(() => root.render(<></>));
-		expect(firstNumber$.nOfSubscriptions).to.eq(0);
-		expect(secondNumber$.nOfSubscriptions).to.eq(0);
+		expect(firstNumber$.nOfSubscriptions()).to.eq(0);
+		expect(secondNumber$.nOfSubscriptions()).to.eq(0);
 	});
 });
