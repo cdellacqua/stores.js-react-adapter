@@ -320,10 +320,14 @@ const firstNumber$ = makeStore(4);
 const secondNumber$ = makeStore(2);
 
 function Sum() {
+	const {first, second} = useReadonlyStores({
+		first: firstNumber$,
+		second: secondNumber$,
+	});
 	return (
-		<WithReadonlyStores stores={{first: firstNumber$, second: secondNumber$}}>
-			{({first, second}) => <h1>{first + second}</h1>}
-		</WithReadonlyStores>
+		<>
+			<h1>{first + second}</h1>
+		</>
 	);
 }
 ```
@@ -364,7 +368,7 @@ an object or an array of all the values contained in the stores, depending on th
 
 #### Defined in
 
-[hooks.ts:106](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L106)
+[hooks.ts:110](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L110)
 
 ___
 
@@ -412,4 +416,4 @@ a tuple containing the current value and a setter.
 
 #### Defined in
 
-[hooks.ts:163](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L163)
+[hooks.ts:167](https://github.com/cdellacqua/stores.js-react-adapter/blob/main/src/lib/hooks.ts#L167)

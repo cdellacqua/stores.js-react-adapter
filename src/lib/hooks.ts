@@ -76,10 +76,14 @@ export function useReadonlyStore<T>(store: ReadonlyStore<T>): T {
  * const secondNumber$ = makeStore(2);
  *
  * function Sum() {
+ * 	const {first, second} = useReadonlyStores({
+ * 		first: firstNumber$,
+ * 		second: secondNumber$,
+ * 	});
  * 	return (
- * 		<WithReadonlyStores stores={{first: firstNumber$, second: secondNumber$}}>
- * 			{({first, second}) => <h1>{first + second}</h1>}
- * 		</WithReadonlyStores>
+ * 		<>
+ * 			<h1>{first + second}</h1>
+ * 		</>
  * 	);
  * }
  * ```
