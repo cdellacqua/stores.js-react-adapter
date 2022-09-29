@@ -200,4 +200,42 @@ describe('components', () => {
 		expect(document.querySelector('h1')?.textContent).to.eq('-8');
 		expect(renders).to.eq(6);
 	});
+
+	it('WithReadonlyStores: tests the correct type inference when using an object', () => {
+		const number$ = makeStore(4);
+		const text$ = makeStore('hello');
+
+		function Concat() {
+			return (
+				<WithReadonlyStores stores={{number: number$, text: text$}}>
+					{({number, text}) => (
+						<h1>{number.toFixed(0) + text.toLowerCase()}</h1>
+					)}
+				</WithReadonlyStores>
+			);
+		}
+		act(() => {
+			root.render(<Concat />);
+		});
+		expect(document.querySelector('h1')?.textContent).to.eq('4hello');
+	});
+
+	it('WithReadonlyStores: tests the correct type inference on useReadonlyStores when using an array', () => {
+		const number$ = makeStore(4);
+		const text$ = makeStore('hello');
+
+		function Concat() {
+			return (
+				<WithReadonlyStores stores={[number$, text$]}>
+					{([number, text]) => (
+						<h1>{number.toFixed(0) + text.toLowerCase()}</h1>
+					)}
+				</WithReadonlyStores>
+			);
+		}
+		act(() => {
+			root.render(<Concat />);
+		});
+		expect(document.querySelector('h1')?.textContent).to.eq('4hello');
+	});
 });

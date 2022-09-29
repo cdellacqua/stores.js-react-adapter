@@ -67,9 +67,41 @@ export function useReadonlyStore<T>(store: ReadonlyStore<T>): T {
 }
 
 /**
- * Subscribe to multiple stores, providing an object or an array of all their values.
+ * Subscribe to multiple stores, providing an array containing all their values.
  *
- * Example using an object:
+ * Example:
+ *
+ * ```tsx
+ * const firstNumber$ = makeStore(4);
+ * const secondNumber$ = makeStore(2);
+ *
+ * function Sum() {
+ * 	const [firstNumber, secondNumber] = useReadonlyStores([firstNumber$, secondNumber$]);
+ * 	return (
+ * 		<>
+ * 			<h1>{firstNumber + secondNumber}</h1>
+ * 		</>
+ * 	);
+ * }
+ * ```
+ * @param stores an array of stores to subscribe to.
+ * @returns an array of all the values contained in the stores.
+ */
+export function useReadonlyStores<
+	T extends unknown[] | [unknown, ...unknown[]],
+>(
+	stores:
+		| {
+				[P in keyof T]: ReadonlyStore<T[P]>;
+		  },
+): {
+	[P in keyof T]: T[P];
+};
+
+/**
+ * Subscribe to multiple stores, providing an object containing all their values.
+ *
+ * Example:
  *
  * ```ts
  * const firstNumber$ = makeStore(4);
@@ -88,24 +120,8 @@ export function useReadonlyStore<T>(store: ReadonlyStore<T>): T {
  * }
  * ```
  *
- * Example using an array:
- *
- * ```tsx
- * const firstNumber$ = makeStore(4);
- * const secondNumber$ = makeStore(2);
- *
- * function Sum() {
- * 	const [firstNumber, secondNumber] = useReadonlyStores([firstNumber$, secondNumber$]);
- * 	return (
- * 		<>
- * 			<h1>{firstNumber + secondNumber}</h1>
- * 		</>
- * 	);
- * }
- * ```
- *
  * @param stores an object or an array of stores to subscribe to.
- * @returns an object or an array of all the values contained in the stores, depending on the type of the argument.
+ * @returns an object of all the values contained in the stores.
  */
 export function useReadonlyStores<T>(
 	stores:
@@ -114,25 +130,41 @@ export function useReadonlyStores<T>(
 		  },
 ): {
 	[P in keyof T]: T[P];
+};
+
+export function useReadonlyStores<T>(stores: object): {
+	[P in keyof T]: T[P];
 } {
 	const [context, setContext] = useState(() => ({
-		derived$: makeDerivedStore(stores, (x) => x),
+		derived$: makeDerivedStore(
+			stores as {[P in keyof T]: ReadonlyStore<T[P]>},
+			(x) => x,
+		),
 		stores,
 	}));
 
 	useEffect(() => {
 		const currentEntries = Object.entries<ReadonlyStore<unknown>>(
-			context.stores,
+			context.stores as Array<ReadonlyStore<unknown>>,
 		);
-		const newEntries = Object.entries<ReadonlyStore<unknown>>(stores);
+		const newEntries = Object.entries<ReadonlyStore<unknown>>(
+			stores as {[P in keyof T]: ReadonlyStore<T[P]>},
+		);
 		if (
 			// Emulating useMemo, but using a deep comparison.
 			currentEntries.length !== newEntries.length ||
-			currentEntries.some((s) => s[1] !== stores[s[0] as keyof T])
+			currentEntries.some(
+				(s) =>
+					s[1] !==
+					(stores as {[P in keyof T]: ReadonlyStore<T[P]>})[s[0] as keyof T],
+			)
 		) {
 			setContext({
 				stores,
-				derived$: makeDerivedStore(stores, (x) => x),
+				derived$: makeDerivedStore(
+					stores as {[P in keyof T]: ReadonlyStore<T[P]>},
+					(x) => x,
+				),
 			});
 		}
 	}, [stores, context.stores]);

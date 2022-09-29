@@ -231,7 +231,7 @@ describe('complex hooks', () => {
 		expect(unsubscriptions).to.eq(2);
 	});
 
-	it('tests that useReadableStores can accept both an object and an array', () => {
+	it('tests that useReadonlyStores can accept both an object and an array', () => {
 		const store1$ = makeStore(2);
 		const store2$ = makeStore(3);
 		act(() => {
@@ -249,17 +249,45 @@ describe('complex hooks', () => {
 		expect(store2$.nOfSubscriptions()).to.eq(0);
 	});
 
-	it('tests that useReadableStores can accept an empty array', () => {
+	it('tests that useReadonlyStores can accept an empty array', () => {
 		act(() => {
 			root.render(<ToJSON stores={[]} />);
 		});
 		expect(document.body.textContent).to.eq(JSON.stringify([]));
 	});
 
-	it('tests that useReadableStores can accept an empty object', () => {
+	it('tests that useReadonlyStores can accept an empty object', () => {
 		act(() => {
 			root.render(<ToJSON stores={{}} />);
 		});
 		expect(document.body.textContent).to.eq(JSON.stringify({}));
+	});
+
+	it('tests the correct type inference on useReadonlyStores when using an object', () => {
+		const number$ = makeStore(4);
+		const text$ = makeStore('hello');
+
+		function Concat() {
+			const {number, text} = useReadonlyStores({number: number$, text: text$});
+			return <h1>{number.toFixed(0) + text.toLowerCase()}</h1>;
+		}
+		act(() => {
+			root.render(<Concat />);
+		});
+		expect(document.querySelector('h1')?.textContent).to.eq('4hello');
+	});
+
+	it('tests the correct type inference on useReadonlyStores when using an array', () => {
+		const number$ = makeStore(4);
+		const text$ = makeStore('hello');
+
+		function Concat() {
+			const [number, text] = useReadonlyStores([number$, text$]);
+			return <h1>{number.toFixed(0) + text.toLowerCase()}</h1>;
+		}
+		act(() => {
+			root.render(<Concat />);
+		});
+		expect(document.querySelector('h1')?.textContent).to.eq('4hello');
 	});
 });
