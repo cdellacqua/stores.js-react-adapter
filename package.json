@@ -2,7 +2,7 @@
 	"name": "@universal-stores/react-adapter",
 	"camelCaseName": "universalStoresReactAdapter",
 	"description": "A library that provides React Hooks for universal-stores.",
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"type": "module",
 	"types": "dist/index.d.ts",
 	"main": "dist/index.cjs",
